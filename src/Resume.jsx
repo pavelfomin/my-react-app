@@ -1,11 +1,32 @@
 import { useEffect, useState } from "react";
 import resumeUrl from "../resume.xml?url";
 
-function Header({ name, title }) {
+function Header({ name, title, contacts, email, domain }) {
   return (
     <header className="header">
-      <h1>{name}</h1>
-      <h2>{title}</h2>
+      <h1 className="header-name">{name}</h1>
+      <h2 className="header-title">{title}</h2>
+
+      <div className="contact-info">
+        <span className="contact-items">
+          {contacts && contacts.map((c, i) => (
+            <span key={i} className="contact-item">
+              <b>{c.type}: </b>
+              {c.url ? (
+                <span dangerouslySetInnerHTML={{ __html: `<a href=\"${c.url}\" target=\"_blank\">${c.value}</a>` }} />
+              ) : (
+                <span>{c.value}</span>
+              )}
+              <br />
+            </span>
+          ))}
+        </span>
+
+        <b>Email: </b>
+        <span className="email" data-user={email} data-domain={domain}>
+          {email && domain ? `${email}@${domain}` : ""}
+        </span>
+      </div>
     </header>
   );
 }
@@ -15,7 +36,7 @@ function ContactList({ contacts }) {
     <div className="contact-list">
       {contacts.map((c, i) => (
         <div key={i} className="contact">
-          <strong>{c.type}:</strong> {c.value}
+          <strong>{c.type}:</strong> {c.url ? <a href={c.url} target="_blank" rel="noreferrer">{c.value}</a> : c.value}
         </div>
       ))}
     </div>
@@ -42,15 +63,39 @@ function SkillsSection({ skills }) {
       {skills.map((s) => (
         <div key={s.id} className="skill">
           <h4>{s.type}</h4>
-          {s.mainDetail ? <div className="skill-main">{s.mainDetail}</div> : null}
+          {s.mainDetail ? <div className="skill-main" dangerouslySetInnerHTML={{ __html: s.mainDetail }} /> : null}
           <ul>
             {s.values.map((v, idx) => (
-              <li key={idx}>{v.text} {v.description ? `(${v.description})` : null}</li>
+              <li key={idx} dangerouslySetInnerHTML={{ __html: (v.description ? `<b>${v.description}:</b> ` : "") + v.html }} />
             ))}
           </ul>
+          {s.details && s.details.length > 0 ? (
+            <SkillDetailsToggle id={s.id} details={s.details} />
+          ) : null}
         </div>
       ))}
     </section>
+  );
+}
+
+function SkillDetailsToggle({ id, details }) {
+  const [visible, setVisible] = useState(false);
+  if (!details || details.length === 0) return null;
+  return (
+    <div className="skill-details">
+      {!visible ? (
+        <a href="#" onClick={(e) => { e.preventDefault(); setVisible(true); }} className={`action-show ${id}`}>More details</a>
+      ) : (
+        <div className={`details-body ${id}`}>
+          <div className="details-content">
+            {details.map((d, i) => (
+              <div key={i} className="detail-line" dangerouslySetInnerHTML={{ __html: d }} />
+            ))}
+          </div>
+          <a href="#" onClick={(e) => { e.preventDefault(); setVisible(false); }} className="action-hide">Hide details</a>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -58,25 +103,72 @@ function WorkHistory({ work }) {
   return (
     <section className="work-history">
       <h3>Work History</h3>
-      {work.map((c) => (
+      {work.main.map((c) => (
         <div key={c.id} className="company">
-          <h4>
-            {c.name} {c.position ? `— ${c.position}` : null}
-          </h4>
+          <h4 dangerouslySetInnerHTML={{ __html: c.headerHtml }} />
           <div className="dates">{c.startDate} — {c.endDate}</div>
           {c.assignments.map((a) => (
             <div key={a.id} className="assignment">
-              {a.name ? <strong>{a.name}</strong> : null}
-              {a.description ? <p>{a.description}</p> : null}
+              <div className="asgn-header" dangerouslySetInnerHTML={{ __html: a.headerHtml }} />
+              {a.descriptionHtml ? <div className="asgn-desc" dangerouslySetInnerHTML={{ __html: a.descriptionHtml }} /> : null}
               <div className="assignment-meta">
                 {a.environment ? <div><strong>Environment:</strong> {a.environment}</div> : null}
                 {a.tools ? <div><strong>Tools:</strong> {a.tools}</div> : null}
               </div>
+              {a.details && a.details.length > 0 ? <AssignmentDetailsToggle id={a.id} details={a.details} /> : null}
             </div>
           ))}
         </div>
       ))}
+
+      {work.more && work.more.length > 0 ? (
+        <div id="more-work-section">
+          <h3>
+            <MoreWorkToggle more={work.more} />
+          </h3>
+        </div>
+      ) : null}
     </section>
+  );
+}
+
+function AssignmentDetailsToggle({ id, details }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="assignment-details">
+      {!visible ? (
+        <a href="#" onClick={(e) => { e.preventDefault(); setVisible(true); }} className={`action-show ${id}`}>More details</a>
+      ) : (
+        <div className={`details-body ${id}`}>
+          <div className="details-content">
+            {details.map((d, i) => (
+              <div key={i} className="level3" dangerouslySetInnerHTML={{ __html: d }} />
+            ))}
+          </div>
+          <a href="#" onClick={(e) => { e.preventDefault(); setVisible(false); }} className="action-hide">Hide details</a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MoreWorkToggle({ more }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      {!open ? (
+        <a href="#" onClick={(e) => { e.preventDefault(); setOpen(true); }} className="action-show work-history-more">More work history</a>
+      ) : (
+        <div className="work-history-more">
+          <div className="more-content">
+            {more.map((c) => (
+              <div key={c.id} className="company" dangerouslySetInnerHTML={{ __html: c.headerHtml }} />
+            ))}
+          </div>
+          <a href="#" onClick={(e) => { e.preventDefault(); setOpen(false); }} className="action-hide">Less work history</a>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -109,8 +201,7 @@ function Resume() {
 
   return (
     <section className="resume">
-      <Header name={data.name} title={data.title} />
-      <ContactList contacts={data.contacts} />
+      <Header name={data.name} title={data.title} contacts={data.contacts} email={data.email} domain={data.domain} />
       <ProfileSection profile={data.profile} />
       <SkillsSection skills={data.skills} />
       <WorkHistory work={data.work} />
@@ -128,44 +219,73 @@ function parseXML(xmlString) {
   const resume = {
     name: root.getAttribute("name") || "",
     title: root.getAttribute("title") || "",
+    email: root.getAttribute("email") || "",
+    domain: root.getAttribute("domain") || "",
+    updated: root.getAttribute("updated") || "",
     contacts: [],
     profile: [],
     skills: [],
-    work: [],
+    work: { main: [], more: [] },
   };
 
   resume.contacts = Array.from(doc.querySelectorAll("contact-list > contact")).map((c) => ({
     type: c.getAttribute("type") || "",
     value: c.getAttribute("value") || c.textContent.trim() || "",
+    url: (c.getAttribute("value") || "").startsWith("http") ? (c.getAttribute("value") || "") : null,
   }));
 
   resume.profile = Array.from(doc.querySelectorAll("profile > entry")).map((e) => e.textContent.trim());
 
-  resume.skills = Array.from(doc.querySelectorAll("skill-list > skill")).map((s) => ({
-    id: s.getAttribute("id") || s.querySelector("type")?.textContent.trim() || Math.random().toString(36).slice(2),
-    type: s.querySelector("type")?.textContent.trim() || "",
-    mainDetail: s.querySelector("main-detail")?.textContent.trim() || null,
-    values: Array.from(s.querySelectorAll("value")).map((v) => ({ description: v.getAttribute("description") || "", text: v.textContent.trim() })),
-  }));
+  resume.skills = Array.from(doc.querySelectorAll("skill-list > skill")).map((s) => {
+    const id = s.getAttribute("id") || s.querySelector("type")?.textContent.trim() || Math.random().toString(36).slice(2);
+    const type = s.querySelector("type")?.textContent.trim() || "";
+    const mainDetail = s.querySelector("main-detail")?.innerHTML.trim() || null;
 
-  resume.work = Array.from(doc.querySelectorAll("work-history > company")).map((c) => ({
-    id: c.getAttribute("id") || Math.random().toString(36).slice(2),
-    name: c.getAttribute("name") || "",
-    url: c.getAttribute("url") || "",
-    department: c.getAttribute("department") || "",
-    position: c.getAttribute("position") || "",
-    startDate: c.getAttribute("startDate") || "",
-    endDate: c.getAttribute("endDate") || "",
-    assignments: Array.from(c.querySelectorAll("assignment")).map((a) => ({
+    // top-level values (direct children)
+    const values = Array.from(s.querySelectorAll("value")).filter(v => v.parentElement === s).map((v) => ({
+      description: v.getAttribute("description") || "",
+      html: v.innerHTML.trim(),
+      text: v.textContent.trim(),
+    }));
+
+    // nested detail values inside skill-details
+    const details = Array.from(s.querySelectorAll("skill-details value")).map((v) => v.innerHTML.trim());
+
+    return { id, type, mainDetail, values, details };
+  });
+
+  // Main work history
+  const mainCompanies = Array.from(doc.querySelectorAll("work-history > company"));
+  resume.work.main = mainCompanies.map((c) => {
+    const id = c.getAttribute("id") || Math.random().toString(36).slice(2);
+    const headerHtml = formatURL(c.getAttribute("url"), c.getAttribute("name")) + (c.getAttribute("department") ? `, ${c.getAttribute("department")}` : "");
+    const startDate = c.getAttribute("startDate") || "";
+    const endDate = c.getAttribute("endDate") || "";
+    const assignments = Array.from(c.querySelectorAll("assignment")).map((a) => ({
       id: a.getAttribute("id") || Math.random().toString(36).slice(2),
-      name: a.getAttribute("name") || "",
+      headerHtml: formatURL(a.getAttribute("url"), a.getAttribute("name")) + (a.getAttribute("department") ? `, ${a.getAttribute("department")}` : ""),
       environment: a.querySelector("assignment-environment")?.textContent.trim() || "",
       tools: a.querySelector("assignment-tools")?.textContent.trim() || "",
-      description: a.querySelector("assignment-description")?.textContent.trim() || "",
-    })),
+      descriptionHtml: a.querySelector("assignment-description")?.innerHTML.trim() || "",
+      details: Array.from(a.querySelectorAll("assignment-details > detail")).map(d => d.innerHTML.trim()),
+    }));
+    return { id, headerHtml, startDate, endDate, assignments };
+  });
+
+  // More work history
+  const moreCompanies = Array.from(doc.querySelectorAll("work-history-more > company"));
+  resume.work.more = moreCompanies.map((c) => ({
+    id: c.getAttribute("id") || Math.random().toString(36).slice(2),
+    headerHtml: formatURL(c.getAttribute("url"), c.getAttribute("name")) + (c.getAttribute("department") ? `, ${c.getAttribute("department")}` : ""),
   }));
 
   return resume;
+}
+
+function formatURL(url, name) {
+  if (!url) return name || "";
+  const full = url.startsWith("http") ? url : `http://${url}`;
+  return `<a href=\"${full}\" target=\"_blank\">${name || url}</a>`;
 }
 
 export default Resume;
