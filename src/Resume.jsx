@@ -42,22 +42,38 @@ function ProfileSection({ profile }) {
 
 function SkillsSection({ skills }) {
   return (
-    <section className="skills">
-      <h3>Skills</h3>
-      {skills.map((s) => (
-        <div key={s.id} className="skill">
-          <h4>{s.type}</h4>
-          {s.mainDetail ? <div className="skill-main" dangerouslySetInnerHTML={{ __html: s.mainDetail }} /> : null}
-          <ul>
-            {s.values.map((v, idx) => (
-              <li key={idx} dangerouslySetInnerHTML={{ __html: (v.description ? `<b>${v.description}:</b> ` : "") + v.html }} />
+    <section className="skills-container">
+      <h2>Skills Summary</h2>
+      <div className="level1">
+        <table className="skill">
+          <tbody>
+            {skills.map((s) => (
+              <tr key={s.id} className="skill-row">
+                <td className="skill-type-header" nowrap="nowrap">
+                  <b className="skill-type">{s.type}</b>
+                </td>
+                <td className="skill-content">
+                  {s.mainDetails && s.mainDetails.map((md, mdi) => (
+                    <span key={mdi}>
+                      <span dangerouslySetInnerHTML={{ __html: (md.description ? `<b>${md.description}:</b> ` : "") + md.html }} />
+                      <br />
+                    </span>
+                  ))}
+                  {s.values.map((v, idx) => (
+                    <span key={idx}>
+                      <span dangerouslySetInnerHTML={{ __html: (v.description ? `<b>${v.description}:</b> ` : "") + v.html }} />
+                      <br />
+                    </span>
+                  ))}
+                  {s.details && s.details.length > 0 ? (
+                    <SkillDetailsToggle id={s.id} details={s.details} />
+                  ) : null}
+                </td>
+              </tr>
             ))}
-          </ul>
-          {s.details && s.details.length > 0 ? (
-            <SkillDetailsToggle id={s.id} details={s.details} />
-          ) : null}
-        </div>
-      ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
@@ -65,21 +81,28 @@ function SkillsSection({ skills }) {
 function SkillDetailsToggle({ id, details }) {
   const [visible, setVisible] = useState(false);
   if (!details || details.length === 0) return null;
+  const detailsId = `${id}-details`;
   return (
-    <div className="skill-details">
+    <>
       {!visible ? (
-        <a href="#" onClick={(e) => { e.preventDefault(); setVisible(true); }} className={`action-show ${id}`}>More details</a>
+        <a href="#" onClick={(e) => { e.preventDefault(); setVisible(true); }} className={`action-show ${detailsId}`}>More details</a>
       ) : (
-        <div className={`details-body ${id}`}>
-          <div className="details-content">
-            {details.map((d, i) => (
-              <div key={i} className="detail-line" dangerouslySetInnerHTML={{ __html: d }} />
-            ))}
-          </div>
-          <a href="#" onClick={(e) => { e.preventDefault(); setVisible(false); }} className="action-hide">Hide details</a>
-        </div>
+        <>
+          <a href="#" onClick={(e) => { e.preventDefault(); setVisible(false); }} className={`action-hide`} style={{ display: 'none' }}>More details</a>
+          <span className={`details-body ${detailsId}`}>
+            <span className="details-content">
+              {details.map((d, i) => (
+                <>
+                  <span key={i} className="detail-item" dangerouslySetInnerHTML={{ __html: (d.description ? `<b>${d.description}:</b> ` : "") + d.html }} />
+                  <br />
+                </>
+              ))}
+            </span>
+            <a href="#" onClick={(e) => { e.preventDefault(); setVisible(false); }} className="action-hide">Hide details</a>
+          </span>
+        </>
       )}
-    </div>
+    </>
   );
 }
 
@@ -223,7 +246,10 @@ function parseXML(xmlString) {
   resume.skills = Array.from(doc.querySelectorAll("skill-list > skill")).map((s) => {
     const id = s.getAttribute("id") || s.querySelector("type")?.textContent.trim() || Math.random().toString(36).slice(2);
     const type = s.querySelector("type")?.textContent.trim() || "";
-    const mainDetail = s.querySelector("main-detail")?.innerHTML.trim() || null;
+    const mainDetails = Array.from(s.querySelectorAll("main-detail")).map((md) => ({
+      description: md.getAttribute("description") || "",
+      html: md.innerHTML.trim(),
+    }));
 
     // top-level values (direct children)
     const values = Array.from(s.querySelectorAll("value")).filter(v => v.parentElement === s).map((v) => ({
@@ -233,9 +259,12 @@ function parseXML(xmlString) {
     }));
 
     // nested detail values inside skill-details
-    const details = Array.from(s.querySelectorAll("skill-details value")).map((v) => v.innerHTML.trim());
+    const details = Array.from(s.querySelectorAll("skill-details value")).map((v) => ({
+      description: v.getAttribute("description") || "",
+      html: v.innerHTML.trim(),
+    }));
 
-    return { id, type, mainDetail, values, details };
+    return { id, type, mainDetails, values, details };
   });
 
   // Main work history
