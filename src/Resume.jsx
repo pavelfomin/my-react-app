@@ -12,11 +12,7 @@ function Header({ name, title, contacts, email, domain }) {
           {contacts && contacts.map((c, i) => (
             <span key={i} className="contact-item">
               <b>{c.type}: </b>
-              {c.url ? (
-                <span dangerouslySetInnerHTML={{ __html: `<a href=\"${c.url}\" target=\"_blank\">${c.value}</a>` }} />
-              ) : (
-                <span>{c.value}</span>
-              )}
+              {c.url ? <a href={c.url} target="_blank" rel="noreferrer">{c.value}</a> : c.value}
               <br />
             </span>
           ))}
@@ -31,23 +27,11 @@ function Header({ name, title, contacts, email, domain }) {
   );
 }
 
-function ContactList({ contacts }) {
-  return (
-    <div className="contact-list">
-      {contacts.map((c, i) => (
-        <div key={i} className="contact">
-          <strong>{c.type}:</strong> {c.url ? <a href={c.url} target="_blank" rel="noreferrer">{c.value}</a> : c.value}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function ProfileSection({ profile }) {
   return (
     <section className="profile">
-      <h3>Profile</h3>
-      <ul>
+      <h2>Profile</h2>
+      <ul className="client">
         {profile.map((p, i) => (
           <li key={i}>{p}</li>
         ))}
