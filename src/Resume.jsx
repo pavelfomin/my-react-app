@@ -121,8 +121,8 @@ function WorkHistory({ work }) {
       {work.more && work.more.length > 0 ? (
         <div id="more-work-section">
           <div id="more-history-toggle">
-            <h2>
-              {!moreWorkOpen ? (
+            {!moreWorkOpen ? (
+              <h2>
                 <a
                   href="#"
                   className="action-show work-history-more"
@@ -134,18 +134,19 @@ function WorkHistory({ work }) {
                 >
                   More work history
                 </a>
-              ) : (
-                <>
-                  <div id="work-history-more" className="work-history-more">
-                    <div className="more-content">
-                      {work.more.map((c) => (
-                        <CompanyBlock key={c.id} company={c} />
-                      ))}
-                    </div>
+              </h2>
+            ) : (
+              <>
+                <div id="work-history-more" className="work-history-more">
+                  <div className="more-content">
+                    {work.more.map((c) => (
+                      <CompanyBlock key={c.id} company={c} />
+                    ))}
                   </div>
-                </>
-              )}
-            </h2>
+                </div>
+              </>
+            )}
+
             {moreWorkOpen && (
               <h2>
                 <a
