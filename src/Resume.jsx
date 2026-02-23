@@ -293,6 +293,25 @@ function EducationSection({ education }) {
   );
 }
 
+function FooterSection({ updated }) {
+  // Parse updated field: "$Date: 2025/05/04 $" -> "2025/05/04"
+  let cleanDate = "";
+  if (updated && updated.includes(":") && updated.includes("$")) {
+    cleanDate = updated.split(":")[1].split("$")[0].trim();
+  } else {
+    cleanDate = updated || "";
+  }
+
+  return (
+    <div id="footer-container">
+      <hr />
+      <div id="footer" className="footer">
+        Last modified: <span className="last-modified">{cleanDate}</span>
+      </div>
+    </div>
+  );
+}
+
 function Resume() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -367,6 +386,7 @@ function Resume() {
       <SkillsSection skills={data.skills} />
       <WorkHistory work={data.work} />
       <EducationSection education={data.education} />
+      <FooterSection updated={data.updated} />
     </section>
   );
 }
