@@ -263,6 +263,36 @@ function AssignmentBlock({ assignment }) {
   );
 }
 
+function EducationSection({ education }) {
+  return (
+    <div id="education-container">
+      <h2>Education</h2>
+      <div className="education-list">
+        {education && education.map((e) => (
+          <div key={e.id} className="level1">
+            <span className="edu-school">
+              {e.schoolUrl ? (
+                <a href={e.schoolUrl.startsWith("http") ? e.schoolUrl : `http://${e.schoolUrl}`} target="_blank" rel="noreferrer">
+                  {e.school}
+                </a>
+              ) : (
+                e.school
+              )}
+            </span>
+            <br />
+            <b className="edu-award">
+              {e.award}
+              {e.year ? `, ${e.year}` : ""}
+            </b>
+            <br />
+            <span className="edu-desc">{e.description}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Resume() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -336,6 +366,7 @@ function Resume() {
       <ProfileSection profile={data.profile} />
       <SkillsSection skills={data.skills} />
       <WorkHistory work={data.work} />
+      <EducationSection education={data.education} />
     </section>
   );
 }
@@ -357,6 +388,7 @@ function parseXML(xmlString) {
     profile: [],
     skills: [],
     work: { main: [], more: [] },
+    education: [],
   };
 
   resume.contacts = Array.from(doc.querySelectorAll("contact-list > contact")).map((c) => ({
@@ -428,6 +460,16 @@ function parseXML(xmlString) {
     }));
     return { id, headerHtml, position, startDate, endDate, assignments };
   });
+
+  // Education
+  resume.education = Array.from(doc.querySelectorAll("education > degree")).map((d) => ({
+    id: d.getAttribute("id") || Math.random().toString(36).slice(2),
+    school: d.getAttribute("school") || "",
+    schoolUrl: d.getAttribute("url") || "",
+    award: d.getAttribute("award") || "",
+    year: d.getAttribute("year") || "",
+    description: d.textContent.trim() || "",
+  }));
 
   return resume;
 }
