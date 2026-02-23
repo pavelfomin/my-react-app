@@ -40,7 +40,7 @@ function ProfileSection({ profile }) {
   );
 }
 
-function SkillsSection({ skills }) {
+function SkillsSection({ skills, showDetails = true }) {
   return (
     <section className="skills-container">
       <h2>Skills Summary</h2>
@@ -65,7 +65,7 @@ function SkillsSection({ skills }) {
                       <br />
                     </span>
                   ))}
-                  {s.details && s.details.length > 0 ? (
+                  {showDetails && s.details && s.details.length > 0 ? (
                     <SkillDetailsToggle id={s.id} details={s.details} />
                   ) : null}
                 </td>
@@ -106,7 +106,7 @@ function SkillDetailsToggle({ id, details }) {
   );
 }
 
-function WorkHistory({ work }) {
+function WorkHistory({ work, showDetails = true }) {
   const [moreWorkOpen, setMoreWorkOpen] = useState(false);
 
   return (
@@ -114,11 +114,11 @@ function WorkHistory({ work }) {
       <h2>Work History</h2>
       <div id="main-work">
         {work.main.map((c) => (
-          <CompanyBlock key={c.id} company={c} />
+          <CompanyBlock key={c.id} company={c} showDetails={showDetails} />
         ))}
       </div>
 
-      {work.more && work.more.length > 0 ? (
+      {showDetails && work.more && work.more.length > 0 ? (
         <div id="more-work-section">
           <div id="more-history-toggle">
             {!moreWorkOpen ? (
@@ -140,7 +140,7 @@ function WorkHistory({ work }) {
                 <div id="work-history-more" className="work-history-more">
                   <div className="more-content">
                     {work.more.map((c) => (
-                      <CompanyBlock key={c.id} company={c} />
+                      <CompanyBlock key={c.id} company={c} showDetails={showDetails} />
                     ))}
                   </div>
                 </div>
@@ -169,7 +169,7 @@ function WorkHistory({ work }) {
   );
 }
 
-function CompanyBlock({ company }) {
+function CompanyBlock({ company, showDetails = true }) {
   return (
     <div className="level1">
       <table className="company">
@@ -185,15 +185,15 @@ function CompanyBlock({ company }) {
       </table>
       <div className="assignments-container">
         {company.assignments.map((a) => (
-          <AssignmentBlock key={a.id} assignment={a} />
+          <AssignmentBlock key={a.id} assignment={a} showDetails={showDetails} />
         ))}
       </div>
     </div>
   );
 }
 
-function AssignmentBlock({ assignment }) {
-  const [showDetails, setShowDetails] = useState(false);
+function AssignmentBlock({ assignment, showDetails: allowDetails = true }) {
+  const [detailsVisible, setDetailsVisible] = useState(false);
   const detailsId = `${assignment.id}-details`;
 
   return (
@@ -219,26 +219,26 @@ function AssignmentBlock({ assignment }) {
         {assignment.descriptionHtml && (
           <span className="desc-text" dangerouslySetInnerHTML={{ __html: assignment.descriptionHtml }} />
         )}
-        {assignment.details && assignment.details.length > 0 ? (
+        {allowDetails && assignment.details && assignment.details.length > 0 ? (
           <a
             href="#"
             className={`action-show ${detailsId}`}
             data-element-id={detailsId}
             onClick={(e) => {
               e.preventDefault();
-              setShowDetails(true);
+              setDetailsVisible(true);
             }}
-            style={{ display: showDetails ? "none" : "inline" }}
+            style={{ display: detailsVisible ? "none" : "inline" }}
           >
             More details
           </a>
         ) : null}
       </div>
 
-      {assignment.details && assignment.details.length > 0 ? (
+      {allowDetails && assignment.details && assignment.details.length > 0 ? (
         <div
           className={`details-body ${detailsId}`}
-          style={{ display: showDetails ? "block" : "none" }}
+          style={{ display: detailsVisible ? "block" : "none" }}
         >
           <div className="details-content">
             {assignment.details.map((d, i) => (
@@ -252,7 +252,7 @@ function AssignmentBlock({ assignment }) {
               data-element-id={detailsId}
               onClick={(e) => {
                 e.preventDefault();
-                setShowDetails(false);
+                setDetailsVisible(false);
               }}
             >
               Hide details
@@ -313,9 +313,15 @@ function FooterSection({ updated }) {
   );
 }
 
+function getUrlParameter(name) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(name);
+}
+
 function Resume() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [showDetails, setShowDetails] = useState(() => getUrlParameter('showDetails') !== 'false');
 
   useEffect(() => {
     let mounted = true;
@@ -384,8 +390,8 @@ function Resume() {
     <section className="resume">
       <Header name={data.name} title={data.title} contacts={data.contacts} email={data.email} domain={data.domain} />
       <ProfileSection profile={data.profile} />
-      <SkillsSection skills={data.skills} />
-      <WorkHistory work={data.work} />
+      <SkillsSection skills={data.skills} showDetails={showDetails} />
+      <WorkHistory work={data.work} showDetails={showDetails} />
       <EducationSection education={data.education} />
       <FooterSection updated={data.updated} />
     </section>
