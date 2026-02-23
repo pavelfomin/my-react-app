@@ -445,41 +445,11 @@ function parseXML(xmlString) {
 
   // Main work history
   const mainCompanies = Array.from(doc.querySelectorAll("work-history > company"));
-  resume.work.main = mainCompanies.map((c) => {
-    const id = c.getAttribute("id") || Math.random().toString(36).slice(2);
-    const headerHtml = formatURL(c.getAttribute("url"), c.getAttribute("name")) + (c.getAttribute("department") ? `, ${c.getAttribute("department")}` : "");
-    const position = c.getAttribute("position") || "";
-    const startDate = c.getAttribute("startDate") || "";
-    const endDate = c.getAttribute("endDate") || "";
-    const assignments = Array.from(c.querySelectorAll("assignment")).map((a) => ({
-      id: a.getAttribute("id") || Math.random().toString(36).slice(2),
-      headerHtml: formatURL(a.getAttribute("url"), a.getAttribute("name")) + (a.getAttribute("department") ? `, ${a.getAttribute("department")}` : ""),
-      environment: a.querySelector("assignment-environment")?.textContent.trim() || "",
-      tools: a.querySelector("assignment-tools")?.textContent.trim() || "",
-      descriptionHtml: a.querySelector("assignment-description")?.innerHTML.trim() || "",
-      details: Array.from(a.querySelectorAll("assignment-details > detail")).map(d => d.innerHTML.trim()),
-    }));
-    return { id, headerHtml, position, startDate, endDate, assignments };
-  });
+  resume.work.main = parseCompanies(mainCompanies);
 
   // More work history
   const moreCompanies = Array.from(doc.querySelectorAll("work-history-more > company"));
-  resume.work.more = moreCompanies.map((c) => {
-    const id = c.getAttribute("id") || Math.random().toString(36).slice(2);
-    const headerHtml = formatURL(c.getAttribute("url"), c.getAttribute("name")) + (c.getAttribute("department") ? `, ${c.getAttribute("department")}` : "");
-    const position = c.getAttribute("position") || "";
-    const startDate = c.getAttribute("startDate") || "";
-    const endDate = c.getAttribute("endDate") || "";
-    const assignments = Array.from(c.querySelectorAll("assignment")).map((a) => ({
-      id: a.getAttribute("id") || Math.random().toString(36).slice(2),
-      headerHtml: formatURL(a.getAttribute("url"), a.getAttribute("name")) + (a.getAttribute("department") ? `, ${a.getAttribute("department")}` : ""),
-      environment: a.querySelector("assignment-environment")?.textContent.trim() || "",
-      tools: a.querySelector("assignment-tools")?.textContent.trim() || "",
-      descriptionHtml: a.querySelector("assignment-description")?.innerHTML.trim() || "",
-      details: Array.from(a.querySelectorAll("assignment-details > detail")).map(d => d.innerHTML.trim()),
-    }));
-    return { id, headerHtml, position, startDate, endDate, assignments };
-  });
+  resume.work.more = parseCompanies(moreCompanies);
 
   // Education
   resume.education = Array.from(doc.querySelectorAll("education > degree")).map((d) => ({
@@ -498,6 +468,25 @@ function formatURL(url, name) {
   if (!url) return name || "";
   const full = url.startsWith("http") ? url : `http://${url}`;
   return `<a href=\"${full}\" target=\"_blank\">${name || url}</a>`;
+}
+
+function parseCompanies(companies) {
+  return companies.map((c) => {
+    const id = c.getAttribute("id") || Math.random().toString(36).slice(2);
+    const headerHtml = formatURL(c.getAttribute("url"), c.getAttribute("name")) + (c.getAttribute("department") ? `, ${c.getAttribute("department")}` : "");
+    const position = c.getAttribute("position") || "";
+    const startDate = c.getAttribute("startDate") || "";
+    const endDate = c.getAttribute("endDate") || "";
+    const assignments = Array.from(c.querySelectorAll("assignment")).map((a) => ({
+      id: a.getAttribute("id") || Math.random().toString(36).slice(2),
+      headerHtml: formatURL(a.getAttribute("url"), a.getAttribute("name")) + (a.getAttribute("department") ? `, ${a.getAttribute("department")}` : ""),
+      environment: a.querySelector("assignment-environment")?.textContent.trim() || "",
+      tools: a.querySelector("assignment-tools")?.textContent.trim() || "",
+      descriptionHtml: a.querySelector("assignment-description")?.innerHTML.trim() || "",
+      details: Array.from(a.querySelectorAll("assignment-details > detail")).map(d => d.innerHTML.trim()),
+    }));
+    return { id, headerHtml, position, startDate, endDate, assignments };
+  });
 }
 
 export default Resume;
