@@ -107,6 +107,8 @@ function SkillDetailsToggle({ id, details }) {
 }
 
 function WorkHistory({ work }) {
+  const [moreWorkOpen, setMoreWorkOpen] = useState(false);
+
   return (
     <section className="work-history-container">
       <h2>Work History</h2>
@@ -120,18 +122,45 @@ function WorkHistory({ work }) {
         <div id="more-work-section">
           <div id="more-history-toggle">
             <h2>
-              <a href="#" className="action-show work-history-more" data-element-id="work-history-more">More work history</a>
+              {!moreWorkOpen ? (
+                <a
+                  href="#"
+                  className="action-show work-history-more"
+                  data-element-id="work-history-more"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMoreWorkOpen(true);
+                  }}
+                >
+                  More work history
+                </a>
+              ) : (
+                <>
+                  <div id="work-history-more" className="work-history-more">
+                    <div className="more-content">
+                      {work.more.map((c) => (
+                        <CompanyBlock key={c.id} company={c} />
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </h2>
-            <div id="work-history-more" className="work-history-more" style={{ display: "none" }}>
-              <div className="more-content">
-                {work.more.map((c) => (
-                  <CompanyBlock key={c.id} company={c} />
-                ))}
-              </div>
+            {moreWorkOpen && (
               <h2>
-                <a href="#" className="action-hide" data-element-id="work-history-more">Less work history</a>
+                <a
+                  href="#"
+                  className="action-hide"
+                  data-element-id="work-history-more"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMoreWorkOpen(false);
+                  }}
+                >
+                  Less work history
+                </a>
               </h2>
-            </div>
+            )}
           </div>
         </div>
       ) : null}
