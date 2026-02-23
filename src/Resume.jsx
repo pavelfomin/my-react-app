@@ -108,74 +108,129 @@ function SkillDetailsToggle({ id, details }) {
 
 function WorkHistory({ work }) {
   return (
-    <section className="work-history">
-      <h3>Work History</h3>
-      {work.main.map((c) => (
-        <div key={c.id} className="company">
-          <h4 dangerouslySetInnerHTML={{ __html: c.headerHtml }} />
-          <div className="dates">{c.startDate} — {c.endDate}</div>
-          {c.assignments.map((a) => (
-            <div key={a.id} className="assignment">
-              <div className="asgn-header" dangerouslySetInnerHTML={{ __html: a.headerHtml }} />
-              {a.descriptionHtml ? <div className="asgn-desc" dangerouslySetInnerHTML={{ __html: a.descriptionHtml }} /> : null}
-              <div className="assignment-meta">
-                {a.environment ? <div><strong>Environment:</strong> {a.environment}</div> : null}
-                {a.tools ? <div><strong>Tools:</strong> {a.tools}</div> : null}
-              </div>
-              {a.details && a.details.length > 0 ? <AssignmentDetailsToggle id={a.id} details={a.details} /> : null}
-            </div>
-          ))}
-        </div>
-      ))}
+    <section className="work-history-container">
+      <h2>Work History</h2>
+      <div id="main-work">
+        {work.main.map((c) => (
+          <CompanyBlock key={c.id} company={c} />
+        ))}
+      </div>
 
       {work.more && work.more.length > 0 ? (
         <div id="more-work-section">
-          <h3>
-            <MoreWorkToggle more={work.more} />
-          </h3>
+          <div id="more-history-toggle">
+            <h2>
+              <a href="#" className="action-show work-history-more" data-element-id="work-history-more">More work history</a>
+            </h2>
+            <div id="work-history-more" className="work-history-more" style={{ display: "none" }}>
+              <div className="more-content">
+                {work.more.map((c) => (
+                  <CompanyBlock key={c.id} company={c} />
+                ))}
+              </div>
+              <h2>
+                <a href="#" className="action-hide" data-element-id="work-history-more">Less work history</a>
+              </h2>
+            </div>
+          </div>
         </div>
       ) : null}
     </section>
   );
 }
 
-function AssignmentDetailsToggle({ id, details }) {
-  const [visible, setVisible] = useState(false);
+function CompanyBlock({ company }) {
   return (
-    <div className="assignment-details">
-      {!visible ? (
-        <a href="#" onClick={(e) => { e.preventDefault(); setVisible(true); }} className={`action-show ${id}`}>More details</a>
-      ) : (
-        <div className={`details-body ${id}`}>
-          <div className="details-content">
-            {details.map((d, i) => (
-              <div key={i} className="level3" dangerouslySetInnerHTML={{ __html: d }} />
-            ))}
-          </div>
-          <a href="#" onClick={(e) => { e.preventDefault(); setVisible(false); }} className="action-hide">Hide details</a>
-        </div>
-      )}
+    <div className="level1">
+      <table className="company">
+        <tbody>
+          <tr>
+            <td className="comp-header position" dangerouslySetInnerHTML={{ __html: company.headerHtml }} />
+          </tr>
+          <tr>
+            <td className="comp-pos position" />
+            <td className="comp-date position">{company.startDate} - {company.endDate}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="assignments-container">
+        {company.assignments.map((a) => (
+          <AssignmentBlock key={a.id} assignment={a} />
+        ))}
+      </div>
     </div>
   );
 }
 
-function MoreWorkToggle({ more }) {
-  const [open, setOpen] = useState(false);
+function AssignmentBlock({ assignment }) {
+  const [showDetails, setShowDetails] = useState(false);
+  const detailsId = `${assignment.id}-details`;
+
   return (
-    <>
-      {!open ? (
-        <a href="#" onClick={(e) => { e.preventDefault(); setOpen(true); }} className="action-show work-history-more">More work history</a>
-      ) : (
-        <div className="work-history-more">
-          <div className="more-content">
-            {more.map((c) => (
-              <div key={c.id} className="company" dangerouslySetInnerHTML={{ __html: c.headerHtml }} />
+    <div className="level2">
+      <div className="asgn-header client" dangerouslySetInnerHTML={{ __html: assignment.headerHtml }} />
+      <table className="assignment">
+        <tbody>
+          {assignment.environment && (
+            <tr className="env-row">
+              <td><b>Environment:</b>&nbsp;</td>
+              <td className="env-val">{assignment.environment}</td>
+            </tr>
+          )}
+          {assignment.tools && (
+            <tr className="tools-row">
+              <td><b>Tools:</b>&nbsp;</td>
+              <td className="tools-val">{assignment.tools}</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+      <div className="asgn-desc level3">
+        {assignment.descriptionHtml && (
+          <span className="desc-text" dangerouslySetInnerHTML={{ __html: assignment.descriptionHtml }} />
+        )}
+        {assignment.details && assignment.details.length > 0 ? (
+          <a
+            href="#"
+            className={`action-show ${detailsId}`}
+            data-element-id={detailsId}
+            onClick={(e) => {
+              e.preventDefault();
+              setShowDetails(true);
+            }}
+            style={{ display: showDetails ? "none" : "inline" }}
+          >
+            More details
+          </a>
+        ) : null}
+      </div>
+
+      {assignment.details && assignment.details.length > 0 ? (
+        <div
+          className={`details-body ${detailsId}`}
+          style={{ display: showDetails ? "block" : "none" }}
+        >
+          <div className="details-content">
+            {assignment.details.map((d, i) => (
+              <div key={i} className="level3" dangerouslySetInnerHTML={{ __html: d }} />
             ))}
           </div>
-          <a href="#" onClick={(e) => { e.preventDefault(); setOpen(false); }} className="action-hide">Less work history</a>
+          <div className="level3">
+            <a
+              href="#"
+              className="action-hide"
+              data-element-id={detailsId}
+              onClick={(e) => {
+                e.preventDefault();
+                setShowDetails(false);
+              }}
+            >
+              Hide details
+            </a>
+          </div>
         </div>
-      )}
-    </>
+      ) : null}
+    </div>
   );
 }
 
@@ -198,8 +253,48 @@ function Resume() {
       .catch((e) => {
         if (mounted) setError(e.message || String(e));
       });
+
+    // Setup delegated event listeners for action-show and action-hide
+    const handleShowClick = (e) => {
+      if (e.target.classList.contains("action-show")) {
+        e.preventDefault();
+        const elementId = e.target.getAttribute("data-element-id");
+        if (elementId) {
+          const elements = document.querySelectorAll(`.${elementId}`);
+          elements.forEach((el) => el.style.display = "");
+          e.target.style.display = "none";
+        }
+      }
+    };
+
+    const handleHideClick = (e) => {
+      if (e.target.classList.contains("action-hide")) {
+        e.preventDefault();
+        const parent = e.target.closest(".resume");
+        if (parent) {
+          const elementId = e.target.getAttribute("data-element-id");
+          if (elementId) {
+            const elements = parent.querySelectorAll(`.${elementId}`);
+            elements.forEach((el) => el.style.display = "none");
+            const showLink = parent.querySelector(`a.action-show.${elementId}`);
+            if (showLink) showLink.style.display = "";
+          }
+        }
+      }
+    };
+
+    const resumeElement = document.querySelector(".resume");
+    if (resumeElement) {
+      resumeElement.addEventListener("click", handleShowClick);
+      resumeElement.addEventListener("click", handleHideClick);
+    }
+
     return () => {
       mounted = false;
+      if (resumeElement) {
+        resumeElement.removeEventListener("click", handleShowClick);
+        resumeElement.removeEventListener("click", handleHideClick);
+      }
     };
   }, []);
 
@@ -287,10 +382,21 @@ function parseXML(xmlString) {
 
   // More work history
   const moreCompanies = Array.from(doc.querySelectorAll("work-history-more > company"));
-  resume.work.more = moreCompanies.map((c) => ({
-    id: c.getAttribute("id") || Math.random().toString(36).slice(2),
-    headerHtml: formatURL(c.getAttribute("url"), c.getAttribute("name")) + (c.getAttribute("department") ? `, ${c.getAttribute("department")}` : ""),
-  }));
+  resume.work.more = moreCompanies.map((c) => {
+    const id = c.getAttribute("id") || Math.random().toString(36).slice(2);
+    const headerHtml = formatURL(c.getAttribute("url"), c.getAttribute("name")) + (c.getAttribute("department") ? `, ${c.getAttribute("department")}` : "");
+    const startDate = c.getAttribute("startDate") || "";
+    const endDate = c.getAttribute("endDate") || "";
+    const assignments = Array.from(c.querySelectorAll("assignment")).map((a) => ({
+      id: a.getAttribute("id") || Math.random().toString(36).slice(2),
+      headerHtml: formatURL(a.getAttribute("url"), a.getAttribute("name")) + (a.getAttribute("department") ? `, ${a.getAttribute("department")}` : ""),
+      environment: a.querySelector("assignment-environment")?.textContent.trim() || "",
+      tools: a.querySelector("assignment-tools")?.textContent.trim() || "",
+      descriptionHtml: a.querySelector("assignment-description")?.innerHTML.trim() || "",
+      details: Array.from(a.querySelectorAll("assignment-details > detail")).map(d => d.innerHTML.trim()),
+    }));
+    return { id, headerHtml, startDate, endDate, assignments };
+  });
 
   return resume;
 }
