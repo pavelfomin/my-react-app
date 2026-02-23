@@ -148,7 +148,7 @@ function CompanyBlock({ company }) {
             <td className="comp-header position" dangerouslySetInnerHTML={{ __html: company.headerHtml }} />
           </tr>
           <tr>
-            <td className="comp-pos position" />
+            <td className="comp-pos position">{company.position}</td>
             <td className="comp-date position">{company.startDate} - {company.endDate}</td>
           </tr>
         </tbody>
@@ -367,6 +367,7 @@ function parseXML(xmlString) {
   resume.work.main = mainCompanies.map((c) => {
     const id = c.getAttribute("id") || Math.random().toString(36).slice(2);
     const headerHtml = formatURL(c.getAttribute("url"), c.getAttribute("name")) + (c.getAttribute("department") ? `, ${c.getAttribute("department")}` : "");
+    const position = c.getAttribute("position") || "";
     const startDate = c.getAttribute("startDate") || "";
     const endDate = c.getAttribute("endDate") || "";
     const assignments = Array.from(c.querySelectorAll("assignment")).map((a) => ({
@@ -377,7 +378,7 @@ function parseXML(xmlString) {
       descriptionHtml: a.querySelector("assignment-description")?.innerHTML.trim() || "",
       details: Array.from(a.querySelectorAll("assignment-details > detail")).map(d => d.innerHTML.trim()),
     }));
-    return { id, headerHtml, startDate, endDate, assignments };
+    return { id, headerHtml, position, startDate, endDate, assignments };
   });
 
   // More work history
@@ -385,6 +386,7 @@ function parseXML(xmlString) {
   resume.work.more = moreCompanies.map((c) => {
     const id = c.getAttribute("id") || Math.random().toString(36).slice(2);
     const headerHtml = formatURL(c.getAttribute("url"), c.getAttribute("name")) + (c.getAttribute("department") ? `, ${c.getAttribute("department")}` : "");
+    const position = c.getAttribute("position") || "";
     const startDate = c.getAttribute("startDate") || "";
     const endDate = c.getAttribute("endDate") || "";
     const assignments = Array.from(c.querySelectorAll("assignment")).map((a) => ({
@@ -395,7 +397,7 @@ function parseXML(xmlString) {
       descriptionHtml: a.querySelector("assignment-description")?.innerHTML.trim() || "",
       details: Array.from(a.querySelectorAll("assignment-details > detail")).map(d => d.innerHTML.trim()),
     }));
-    return { id, headerHtml, startDate, endDate, assignments };
+    return { id, headerHtml, position, startDate, endDate, assignments };
   });
 
   return resume;
